@@ -1,0 +1,133 @@
+
+SQL – consultas jerarquicas usando la cláusula START WITH y CONNECT BY –
+January 14, 1970 admintor
+
+En algunas ocasiones, es necesario recuperar los datos de una tabla cuya relación es recursiva, para mostrar pertenencias y/o jerarquías. Tales jerarquías generalmente son representadas a trav&eacute;s de estructuras tipo árbol, en donde la raíz (o nodo principal) tiene ramas (nodos descendientes) y cada una de estas ramas puede a su vez generar más ramas, hasta llegar a un punto final en donde no hay mas divisiones. Esos nodos terminales son pues llamados también hojas.
+
+Para el ejemplo, supongamos que se tiene una tabla donde se tiene almacenados los datos familiares de personas en una tabla como la siguiente:
+
+idPersona
+	
+
+Nombres
+	
+
+hijoDe
+
+1
+	
+
+Juan Carlos
+	
+
+ 
+
+2
+	
+
+Luis
+	
+
+5
+
+3
+	
+
+Pedro
+	
+
+5
+
+4
+	
+
+Jaime Alberto
+	
+
+9
+
+5
+	
+
+Olga María
+	
+
+1
+
+6
+	
+
+Marta Edith
+	
+
+8
+
+7
+	
+
+Lucía
+	
+
+9
+
+8
+	
+
+Nelly
+	
+
+1
+
+9
+	
+
+Felipe
+	
+
+8
+
+10
+	
+
+Edgar Nelson
+	
+
+8
+
+La anterior tabla, almacena los datos acerca de los padres de cada persona. De esta manera, es posible construir un árbol como el siguiente:
+
+Desde la versión 9i, el lenguaje sql de oracle provee la posibilidad de recuperar los datos de una tabla, vista, o tabla externa, simulando el recorrido de un árbol, el cual puede hacerse comenzando por la raía hasta llegar a todas las hojas, o desde las hojas hasta llegar a la raíz.
+
+Por lo tanto, La consulta:
+
+SELECT nombres, LEVEL
+
+FROM persona
+
+START WITH nombres=’Juan Carlos’
+
+CONNECT BY PRIOR idPersona = hijode;
+
+Retornará el nombre de todas las personas y el id del respectivo padre; empezando por el nombre Juan Carlos. La Pseudocoluma LEVEL indica el nivel en el que se encuentra el registro, tras haber construido el arbol. START WITH indica el registro raiz; es decir, donde empieza el arbol. CONNECT BY PRIOR indica las columnas en las cuales existe la relación padre-hijo
+
+Salida:
+
+ 
+
+Si se desea recuperar la descendencia a partir de “Felipe”, la consulta sería:
+
+Obsérvese que en la anterior consulta el valor de LEVEL para “Felipe” es igual a 1, ya en el árbol que construye esta consulta, el nodo “Felipe” se encuentra en el primer nivel.
+
+ 
+
+Si por el contrario, se desean conocer los padres de felipe, la consulta sería:
+
+Obséverse en el anterior ejemplo, que el recorrido se hizo de abajo hacia arriba (en el árbol). El orden de las columnas en la clausula CONNECT BY PRIOR, especifica el orden del recorrido. En el primer ejemplo se tenía:CONNECT BY PRIOR idPersona=hijoDe y se tuvo el recorrido del arbol de arriba a abajo. En el ultimo ejemplo se tuvo CONNECT BY PRIOR hijoDe =idPersona, y el recorrido fue de abajo hacia arriba.
+
+De igual manera, desde la versión 9i, fue incluida la función SYS_CONNECT_BY_PATH(), que concatena los valores de las ramas del arbol en el recorrido.
+
+El siguiente es un ejemplo de su utilización:
+
+ 
+
+Es muy fácil entonces hacer consultas jerárquicas con la utilización de la cláusula START WITH y CONNECT BY y la función SYS_CONNECT_BY_PATH. 
