@@ -1,133 +1,176 @@
+<article id="post-2164" class="post-2164 post type-post status-publish format-standard hentry">
+		<div class="post-inner-content">
+		<header class="entry-header page-header">
 
-SQL ñ consultas jerarquicas usando la cl·usula START WITH y CONNECT BY ñ
-January 14, 1970 admintor
+			<h1 class="entry-title ">SQL ‚Äì consultas jerarquicas usando la cl√°usula START WITH y CONNECT BY ‚Äì</h1>
 
-En algunas ocasiones, es necesario recuperar los datos de una tabla cuya relaciÛn es recursiva, para mostrar pertenencias y/o jerarquÌas. Tales jerarquÌas generalmente son representadas a trav&eacute;s de estructuras tipo ·rbol, en donde la raÌz (o nodo principal) tiene ramas (nodos descendientes) y cada una de estas ramas puede a su vez generar m·s ramas, hasta llegar a un punto final en donde no hay mas divisiones. Esos nodos terminales son pues llamados tambiÈn hojas.
+			<div class="entry-meta">
+				<span class="posted-on"><i class="fa fa-calendar"></i> <a href="http://zonaoracle.net/index.php/1970/01/14/c2164/" rel="bookmark"><time class="entry-date published" datetime="1970-01-14T20:46:27+00:00">January 14, 1970</time></a></span><span class="byline"> <i class="fa fa-user"></i> <span class="author vcard"><a class="url fn n" href="http://zonaoracle.net/index.php/author/admintor/">admintor</a></span></span>
+								
+			</div><!-- .entry-meta -->
+		</header><!-- .entry-header -->
 
-Para el ejemplo, supongamos que se tiene una tabla donde se tiene almacenados los datos familiares de personas en una tabla como la siguiente:
+		<div class="entry-content">
+			<p>En algunas ocasiones, es necesario recuperar los datos de una tabla cuya relaci√≥n es recursiva, para mostrar pertenencias y/o jerarqu√≠as. Tales jerarqu√≠as generalmente son representadas a trav&amp;eacut<span id="more-2164"></span>e;s de estructuras tipo √°rbol, en donde la ra√≠z (o nodo principal) tiene ramas (nodos descendientes) y cada una de estas ramas puede a su vez generar m√°s ramas, hasta llegar a un punto final en donde no hay mas divisiones. Esos nodos terminales son pues llamados tambi√©n hojas. </p>
+<p><img src="images/jerarquia/estructura-arbol.gif" width="170" height="158"></p>
+<p>Para el ejemplo, supongamos que se tiene una tabla donde se tiene almacenados los datos familiares de personas en una tabla como la siguiente: </p>
+<table class=" table table-hover" cellspacing="0" cellpadding="0" border="1">
+<tbody><tr>
+<td width="115" valign="top">
+<p><strong>idPersona </strong></p>
+</td>
+<td width="115" valign="top">
+<p><strong>Nombres </strong></p>
+</td>
+<td width="115" valign="top">
+<p><strong>hijoDe </strong></p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>1 </p>
+</td>
+<td width="115" valign="top">
+<p>Juan Carlos </p>
+</td>
+<td width="115" valign="top">
+<p>&nbsp; </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>2 </p>
+</td>
+<td width="115" valign="top">
+<p>Luis </p>
+</td>
+<td width="115" valign="top">
+<p>5 </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>3 </p>
+</td>
+<td width="115" valign="top">
+<p>Pedro </p>
+</td>
+<td width="115" valign="top">
+<p>5 </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>4 </p>
+</td>
+<td width="115" valign="top">
+<p>Jaime Alberto </p>
+</td>
+<td width="115" valign="top">
+<p>9 </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>5 </p>
+</td>
+<td width="115" valign="top">
+<p>Olga Mar√≠a </p>
+</td>
+<td width="115" valign="top">
+<p>1 </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>6 </p>
+</td>
+<td width="115" valign="top">
+<p>Marta Edith </p>
+</td>
+<td width="115" valign="top">
+<p>8 </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>7 </p>
+</td>
+<td width="115" valign="top">
+<p>Luc√≠a </p>
+</td>
+<td width="115" valign="top">
+<p>9 </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>8 </p>
+</td>
+<td width="115" valign="top">
+<p>Nelly </p>
+</td>
+<td width="115" valign="top">
+<p>1 </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>9 </p>
+</td>
+<td width="115" valign="top">
+<p>Felipe </p>
+</td>
+<td width="115" valign="top">
+<p>8 </p>
+</td>
+</tr>
+<tr>
+<td width="115" valign="top">
+<p>10 </p>
+</td>
+<td width="115" valign="top">
+<p>Edgar Nelson </p>
+</td>
+<td width="115" valign="top">
+<p>8 </p>
+</td>
+</tr>
+</tbody></table>
+<p>La anterior tabla, almacena los datos acerca de los padres de cada persona. De esta manera, es posible construir un √°rbol como el siguiente: </p>
+<p><img src="images/jerarquia/estructura-arbol-familia.gif" width="274" height="183"></p>
+<p>Desde la versi√≥n 9i, el lenguaje sql de oracle provee la posibilidad de recuperar los datos de una tabla, vista, o tabla externa, simulando el recorrido de un √°rbol, el cual puede hacerse comenzando por la ra√≠a hasta llegar a todas las hojas, o desde las hojas hasta llegar a la ra√≠z. </p>
+<p>Por lo tanto, La consulta: </p>
+<p><strong>SELECT</strong> nombres, LEVEL </p>
+<p><strong>FROM</strong> persona </p>
+<p><strong>START WITH</strong> nombres=‚ÄôJuan Carlos‚Äô </p>
+<p><strong>CONNECT BY PRIOR</strong> idPersona = hijode; </p>
+<p>Retornar√° el nombre de todas las personas y el id del respectivo padre; empezando por el nombre Juan Carlos. La Pseudocoluma LEVEL indica el nivel en el que se encuentra el registro, tras haber construido el arbol. START WITH indica el registro raiz; es decir, donde empieza el arbol. CONNECT BY PRIOR indica las columnas en las cuales existe la relaci√≥n padre-hijo </p>
+<p>Salida: </p>
+<p><img src="images/jerarquia/sql1.gif" width="424" height="285"></p>
+<p>&nbsp; </p>
+<p>Si se desea recuperar la descendencia a partir de ‚ÄúFelipe‚Äù, la consulta ser√≠a: </p>
+<p><img src="images/jerarquia/sql2.gif" width="421" height="158"></p>
+<p>Obs√©rvese que en la anterior consulta el valor de LEVEL para ‚ÄúFelipe‚Äù es igual a 1, ya en el √°rbol que construye esta consulta, el nodo ‚ÄúFelipe‚Äù se encuentra en el primer nivel. </p>
+<p>&nbsp; </p>
+<p>Si por el contrario, se desean conocer los padres de felipe, la consulta ser√≠a: </p>
+<p><img src="images/jerarquia/sql3.gif" width="422" height="156"></p>
+<p>Obs√©verse en el anterior ejemplo, que el recorrido se hizo de abajo hacia arriba (en el √°rbol). El orden de las columnas en la clausula CONNECT BY PRIOR, especifica el orden del recorrido. En el primer ejemplo se ten√≠a:CONNECT BY PRIOR idPersona=hijoDe y se tuvo el recorrido del arbol de arriba a abajo. En el ultimo ejemplo se tuvo CONNECT BY PRIOR hijoDe =idPersona, y el recorrido fue de abajo hacia arriba. </p>
+<p>De igual manera, desde la versi√≥n 9i, fue incluida la funci√≥n SYS_CONNECT_BY_PATH(), que concatena los valores de las ramas del arbol en el recorrido. </p>
+<p>El siguiente es un ejemplo de su utilizaci√≥n: </p>
+<p><img src="images/jerarquia/sql4.gif" width="564" height="283"></p>
+<p>&nbsp; </p>
+<p>Es muy f√°cil entonces hacer consultas jer√°rquicas con la utilizaci√≥n de la cl√°usula START WITH y CONNECT BY y la funci√≥n SYS_CONNECT_BY_PATH. </p>
+<p>Escrito por: Arturo T  <br>
+arturo_toca at yahoo dot com </p>
+<p>&nbsp;</p>
+					</div><!-- .entry-content -->
 
-idPersona
+		<footer class="entry-meta">
+
+			
+		</footer><!-- .entry-meta -->
+	</div>
+
 	
-
-Nombres
-	
-
-hijoDe
-
-1
-	
-
-Juan Carlos
-	
-
- 
-
-2
-	
-
-Luis
-	
-
-5
-
-3
-	
-
-Pedro
-	
-
-5
-
-4
-	
-
-Jaime Alberto
-	
-
-9
-
-5
-	
-
-Olga MarÌa
-	
-
-1
-
-6
-	
-
-Marta Edith
-	
-
-8
-
-7
-	
-
-LucÌa
-	
-
-9
-
-8
-	
-
-Nelly
-	
-
-1
-
-9
-	
-
-Felipe
-	
-
-8
-
-10
-	
-
-Edgar Nelson
-	
-
-8
-
-La anterior tabla, almacena los datos acerca de los padres de cada persona. De esta manera, es posible construir un ·rbol como el siguiente:
-
-Desde la versiÛn 9i, el lenguaje sql de oracle provee la posibilidad de recuperar los datos de una tabla, vista, o tabla externa, simulando el recorrido de un ·rbol, el cual puede hacerse comenzando por la raÌa hasta llegar a todas las hojas, o desde las hojas hasta llegar a la raÌz.
-
-Por lo tanto, La consulta:
-
-SELECT nombres, LEVEL
-
-FROM persona
-
-START WITH nombres=íJuan Carlosí
-
-CONNECT BY PRIOR idPersona = hijode;
-
-Retornar· el nombre de todas las personas y el id del respectivo padre; empezando por el nombre Juan Carlos. La Pseudocoluma LEVEL indica el nivel en el que se encuentra el registro, tras haber construido el arbol. START WITH indica el registro raiz; es decir, donde empieza el arbol. CONNECT BY PRIOR indica las columnas en las cuales existe la relaciÛn padre-hijo
-
-Salida:
-
- 
-
-Si se desea recuperar la descendencia a partir de ìFelipeî, la consulta serÌa:
-
-ObsÈrvese que en la anterior consulta el valor de LEVEL para ìFelipeî es igual a 1, ya en el ·rbol que construye esta consulta, el nodo ìFelipeî se encuentra en el primer nivel.
-
- 
-
-Si por el contrario, se desean conocer los padres de felipe, la consulta serÌa:
-
-ObsÈverse en el anterior ejemplo, que el recorrido se hizo de abajo hacia arriba (en el ·rbol). El orden de las columnas en la clausula CONNECT BY PRIOR, especifica el orden del recorrido. En el primer ejemplo se tenÌa:CONNECT BY PRIOR idPersona=hijoDe y se tuvo el recorrido del arbol de arriba a abajo. En el ultimo ejemplo se tuvo CONNECT BY PRIOR hijoDe =idPersona, y el recorrido fue de abajo hacia arriba.
-
-De igual manera, desde la versiÛn 9i, fue incluida la funciÛn SYS_CONNECT_BY_PATH(), que concatena los valores de las ramas del arbol en el recorrido.
-
-El siguiente es un ejemplo de su utilizaciÛn:
-
- 
-
-Es muy f·cil entonces hacer consultas jer·rquicas con la utilizaciÛn de la cl·usula START WITH y CONNECT BY y la funciÛn SYS_CONNECT_BY_PATH. 
+</article>
